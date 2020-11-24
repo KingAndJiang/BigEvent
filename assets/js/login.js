@@ -38,7 +38,7 @@ $(function () {
         // 异步请求
         console.log(dataStr);
         $.ajax({
-            url: '/api/loogin',
+            url: '/api/login',
             method: 'post',
             data: dataStr,
             success(res) {
