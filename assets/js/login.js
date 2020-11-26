@@ -1,92 +1,90 @@
 $(function () {
-    //1. 去注册连接
-    $('#link-reg').on('click', function () {
+    // 去注册 按钮 点击事件
+    $('#link_reg').on('click', function () {
         $('.login-box').hide();
         $('.reg-box').show();
-    });
-    // 去登录 连接
-    $('#link-login').on('click', function () {
-        $('.reg-box').hide();
-        $('.login-box').show();
-
     })
 
-    //2. 为layui 添加 登录校验规则
+    // 登录页面点击事件
+    $('#link_login').on('click', function () {
+        $('.login-box').show();
+        $('.reg-box').hide();
+    })
+
+    // layui 中获取 form 对象
     layui.form.verify({
+        // 通过 form.verify=() 函数自定义 效验规则
         pwd: [
             /^[\S]{6,12}$/
-            , '密码须6-12位 不能出现空格'
+            , '密码必须6-12  且不能有空格',
         ],
-        // 效验两次密码 是否一致规则
+        // 效验 两次密码 框中的密码 是否一致
         repwd: function (value) {
-            // 1. 获取 密码框密码
-            let pwd1 = $('.reg-box [name=password]').val()
-            // 比较两个密码是否相同
-            if (pwd1 != value) return '两次密码不相同';
-        },
-
+            let pwd1 = $('.reg-box [name=password]').val();
+            if (pwd1 != value) return '两次密码不一致';
+        }
     });
 
-    // 注册表单 提交事件
-    $('#regForm').on('submit', submitData);
-    // 监听注册表单的提交事件 (登录)
-    $('#form_login').on('submit', function (e) {
-        //阻止 默认提交
+
+    // 注册表单 提交 事件
+    $('#regForm').on('submit', submitData)
+
+    // 登录表单提交事件
+    $('#formLogin').on('submit', function (e) {
         e.preventDefault();
-        // 获取表单数据
-        let dataStr = $(this).serialize()
-        // 异步请求
-        console.log(dataStr);
+        let dataStr = $(this).serialize();
         $.ajax({
             url: '/api/login',
             method: 'post',
             data: dataStr,
             success(res) {
-                //登录失败
-                if (res.status != 0) return layui.layer.msg(res.message);
+                // 登录失败
+                if (res.status !== 0) return layui.layer.msg(res.message);
                 // 登录成功
-                layui.layer.msg(res.message, {
+                layer.msg(res.message, {
                     icon: 6,
-                    time: 1500 // 1.5秒之后 关闭
+                    time: 1500, // 1.5秒关闭  (如果不配置 默认是3秒) 
                 }, function () {
+                    // 保存token 值到localstorage
                     localStorage.setItem('token', res.token);
-                    location.href = 'index.html';
+                    // 跳转到 index.html
+                    location.href = '/index.html';
                 });
+
             }
-        });
+        })
     })
+
 })
 
 
-// 1 注册函数 
+
+// 注册 函数
 function submitData(e) {
-    e.preventDefault() // 阻止默认提交行为
-    let datastr = $(this).serialize();
-    console.log(datastr);
+    e.preventDefault(); // 阻止表单默认提交行为
+    let dataStr = $(this).serialize();
+    // 发送异步请求
     $.ajax({
         url: '/api/reguser',
         method: 'post',
-        data: datastr,
+        data: dataStr,
         success(res) {
-            // 不论 成功否 都显示 消息
+            // 注册失败 
             layui.layer.msg(res.message);
-            // 注册出错
             if (res.status != 0) return;
-            // // 将用户名 密码自动填充到 登录表单中
-            let uname = $('.reg-box [name-username]').val().trim();
+
+            // 注册成功 把注册好的用户名 和密码 拿给登录页面
+            let uname = $('.reg-box [name=username]').val().trim();
             $('.login-box [name=username]').val(uname);
 
-            let upwd = $('.reg-box [name-password]').val().trim();
+            let upwd = $('.reg-box [name=password]').val().trim();
             $('.login-box [name=password]').val(upwd);
 
-            // 注册成功
-            // 清空 注册表单
+            // 清空 表单注册表 
             $('#regForm')[0].reset();
-            // 切换到登录页面
+            // 自动跳转到登录页面;
             $('#link_login').click();
+
         }
     })
 }
-
-
-
